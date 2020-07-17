@@ -11,18 +11,19 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 /*
- * simplistic reconstruction of the AsyncTask class, which (unfortunately
+ * simplistic reconstruction of the basic AsyncTask functionality, which (unfortunately
  * from the point of view of the MAD course) will be deprecated in API 30
+ *
  * based on https://medium.com/@bhojwaniravi/rxifying-asynctask-appetizer-for-rxandroid-beginners-bd483df40e78
  *
  * declares the three type parameters from AsyncTask to allow seamless refactoring,
- * but does not implement update functionality while the task is running (i.e. the second
+ * but does not implement update functionality while the task is running (i.e. the Progress
  * type parameter is not used at all)
  *
  * given the MAD demos from S20, all references to AsyncTask can be replaced by references to this class
  * without losing functionality
  */
-public abstract class MADAsyncTask<I, U, O> {
+public abstract class MADAsyncTask<Params, Progress, Result> {
 
     protected static String logger = "MADAsyncTask";
 
@@ -40,20 +41,20 @@ public abstract class MADAsyncTask<I, U, O> {
      * must be implemented by subclasses for doing something in the background (otherwise
      * it wouldn't make sense to use an async task at all...)
      */
-    protected abstract O doInBackground(I... input);
+    protected abstract Result doInBackground(Params... input);
 
     /*
      * should be overridden by subclasses, e.g. for providing a reaction to
      * the result of doInBackground()
      */
-    protected void onPostExecute(O result) {
+    protected void onPostExecute(Result result) {
 
     }
 
     /*
      * coordinates the background and foreground processes using rxjava / rxandroid
      */
-    public void execute(I... input) {
+    public void execute(Params... input) {
         if (verbose) {
             Log.d(logger, "execute(): calling onPreExecute() on thread: " + Thread.currentThread());
         }
@@ -61,15 +62,15 @@ public abstract class MADAsyncTask<I, U, O> {
 
         Observable.create(
                 // this will allow that doInBackground() results will be passed to observers for reaction
-                new ObservableOnSubscribe<O>() {
+                new ObservableOnSubscribe<Result>() {
                     @Override
-                    public void subscribe(ObservableEmitter<O> emitter) {
+                    public void subscribe(ObservableEmitter<Result> emitter) {
                         if (!emitter.isDisposed()) {
                             if (verbose) {
                                 Log.d(logger, "execute(): calling doInBackground() on thread: " + Thread.currentThread());
                             }
                             try {
-                                O result = MADAsyncTask.this.doInBackground(input);
+                                Result result = MADAsyncTask.this.doInBackground(input);
                                 if (verbose) {
                                     Log.d(logger, "execute(): obtained result from doInBackground(): " + result);
                                 }
@@ -87,7 +88,7 @@ public abstract class MADAsyncTask<I, U, O> {
                 // this will make sure that that the observer that reacts to doInBackground() results (see below) will be run on the main thread
                 .observeOn(AndroidSchedulers.mainThread())
                 // this implements the reaction to receiving a doInBackground() result as a call to onPostExecute()
-                .subscribe(new Observer<O>() {
+                .subscribe(new Observer<Result>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
@@ -97,7 +98,7 @@ public abstract class MADAsyncTask<I, U, O> {
                      * this method will receive the result from the background execution
                      */
                     @Override
-                    public void onNext(O result) {
+                    public void onNext(Result result) {
                         if (verbose) {
                             Log.d(logger, "execute(): pass result to onPostExecute() on thread: " + Thread.currentThread());
                         }

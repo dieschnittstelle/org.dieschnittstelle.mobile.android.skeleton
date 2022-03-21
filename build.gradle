@@ -1,5 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+plugins {
+  id "org.sonarqube" version "3.3"
+}
+
+sonarqube {
+  properties {
+    property "sonar.projectKey", "devtty_org.dieschnittstelle.mobile.android.skeleton"
+    property "sonar.organization", "devtty"
+    property "sonar.host.url", "https://sonarcloud.io"
+  }
+}
+
 buildscript {
     repositories {
         google()

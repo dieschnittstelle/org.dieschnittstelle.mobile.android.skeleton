@@ -10,7 +10,7 @@ android {
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation":
@@ -72,7 +72,14 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     // test setting
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+//    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    // 2303 androidx test
+    androidTestImplementation 'androidx.test:core:1.4.1-alpha05'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4-alpha05'
+    androidTestImplementation 'androidx.test:runner:1.5.0-alpha02'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha05'
+    
+    
 }
 

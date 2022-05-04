@@ -69,4 +69,8 @@ public class Todo implements Serializable{
     public void setFavourite(boolean favourite){
 	this.favourite = favourite;
     }
+
+    public Todo(String name){
+        this.name = name;
+    }
 }

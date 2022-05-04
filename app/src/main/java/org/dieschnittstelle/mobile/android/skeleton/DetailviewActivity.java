@@ -7,6 +7,8 @@ import android.widget.EditText;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,21 +27,25 @@ public class DetailviewActivity extends AppCompatActivity {
 
         itemNameText = findViewById(R.id.itemName);
         itemDescriptionText = findViewById(R.id.itemDescription);
-
         saveItemButton = findViewById(R.id.fab);
 
         saveItemButton.setOnClickListener(v -> onSaveItem());
 
-        String item = getIntent().getStringExtra(ARG_ITEM);
+        Todo item = (Todo) getIntent().getSerializableExtra(ARG_ITEM);
 
         if(item != null){
-            itemNameText.setText(item);
+            itemNameText.setText(item.getName());
+            itemDescriptionText.setText(item.getDescription());
         }
     }
 
     private void onSaveItem(){
         Intent returnIntent = new Intent();
-        String item = itemNameText.getText().toString();
+        String name = itemNameText.getText().toString();
+        String description = itemDescriptionText.getText().toString();
+        Todo item = new Todo(name);
+        item.setDescription(description);
+
         returnIntent.putExtra(ARG_ITEM, item);
 
         setResult(Activity.RESULT_OK, returnIntent);

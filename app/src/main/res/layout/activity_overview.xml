@@ -13,16 +13,16 @@
         tools:context="org.dieschnittstelle.mobile.android.skeleton.OverviewActivity">
 
 
-        <!--<ListView
+        <ListView
             android:id="@+id/listView"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        </ListView>-->
-        <LinearLayout
+        </ListView>
+        <!--<LinearLayout
             android:id="@+id/listView"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"/>-->
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"

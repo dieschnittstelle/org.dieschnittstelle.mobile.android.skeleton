@@ -73,4 +73,6 @@ public class Todo implements Serializable{
     public Todo(String name){
         this.name = name;
     }
+
+    public Todo(){}
 }

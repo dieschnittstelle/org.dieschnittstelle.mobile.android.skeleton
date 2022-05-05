@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         tools:context="org.dieschnittstelle.mobile.android.skeleton.OverviewActivity">
 
-
         <ListView
             android:id="@+id/listView"
             android:layout_width="match_parent"

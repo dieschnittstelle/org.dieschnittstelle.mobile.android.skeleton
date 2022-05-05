@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="viewmodel"
+            type="org.dieschnittstelle.mobile.android.skeleton.DetailviewActivity"/>
+    </data>
+
+<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <com.google.android.material.textfield.TextInputLayout
@@ -11,22 +17,39 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <com.google.android.material.textfield.TextInputEditText
+            android:lines="1"
             android:id="@+id/itemName"
+            android:text="@={viewmodel.item.name}"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+            <requestFocus/>
+        </com.google.android.material.textfield.TextInputEditText>
     </com.google.android.material.textfield.TextInputLayout>
-    <com.google.android.material.textfield.TextInputLayout
+    <com.google.android.material.checkbox.MaterialCheckBox
+        app:layout_constraintRight_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/itemNameWrapper"
+        android:id="@+id/itemChecked"
+        android:checked="@={viewmodel.item.done}"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </com.google.android.material.checkbox.MaterialCheckBox>
+    <com.google.android.material.textfield.TextInputLayout
+        app:layout_constraintTop_toBottomOf="@+id/itemChecked"
         app:hintEnabled="true"
         android:hint="Description"
         android:id="@+id/itemDescriptionWrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <com.google.android.material.textfield.TextInputEditText
+            android:gravity="start"
             android:id="@+id/itemDescription"
+            android:text="@={viewmodel.item.description}"
+            android:lines="10"
+            android:minLines="5"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -34,5 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:onClick="@{() -> viewmodel.onSaveItem()}"
         app:srcCompat="@drawable/baseline_save_white_24dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

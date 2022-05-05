@@ -1,9 +1,8 @@
 package org.dieschnittstelle.mobile.android.skeleton;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -23,8 +22,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
-import org.dieschnittstelle.mobile.android.skeleton.view.ToDoAdapter;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +59,7 @@ public class OverviewActivity extends AppCompatActivity {
 
         addNewItemButton = findViewById(R.id.fab);
 
-        listViewAdapter = new ArrayAdapter<>(this, R.layout.activity_overview_listitem_view, listViewItems);
+        listViewAdapter = initializeListViewAdapter();
         listView.setAdapter(listViewAdapter);
         listView.setOnItemClickListener((AdapterView<?> adapterView, View view, int position, long id) -> {
                 Todo selectedItem = listViewAdapter.getItem(position);
@@ -78,6 +75,27 @@ public class OverviewActivity extends AppCompatActivity {
         Arrays.asList("lorem", "dopsum", "eler", "sed", "adipiscing").stream()
                 .map(name -> new Todo(name))
                 .forEach(item ->addListitemView(item));
+    }
+
+    private ArrayAdapter<Todo> initializeListViewAdapter() {
+        return new ArrayAdapter<>(this, R.layout.activity_overview_listitem_view, listViewItems) {
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                // 1. take the date to be shown
+                Todo todo = super.getItem(position);
+                // 2. create the view to show the data
+                ViewGroup itemView = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_overview_listitem_view, null);
+                //2.2 read out the single view elements that will be used to show the data
+                TextView itemNameText = itemView.findViewById(R.id.itemName);
+                CheckBox itemCheckedCheckbox = itemView.findViewById(R.id.itemChecked);
+                //3. bind the data to the view elements
+                itemNameText.setText(todo.getName());
+                itemCheckedCheckbox.setChecked(todo.isDone());
+
+                return itemView;
+            }
+        };
     }
 
     private void initializeActivityResultLaunchers(){

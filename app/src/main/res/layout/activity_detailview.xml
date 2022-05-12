@@ -26,15 +26,16 @@
         </com.google.android.material.textfield.TextInputEditText>
     </com.google.android.material.textfield.TextInputLayout>
     <com.google.android.material.checkbox.MaterialCheckBox
-        app:layout_constraintRight_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/itemNameWrapper"
-        android:id="@+id/itemChecked"
+        android:id="@+id/itemDone"
         android:checked="@={viewmodel.item.done}"
+        android:text="checked?"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/itemNameWrapper">
     </com.google.android.material.checkbox.MaterialCheckBox>
     <com.google.android.material.textfield.TextInputLayout
-        app:layout_constraintTop_toBottomOf="@+id/itemChecked"
+        app:layout_constraintTop_toBottomOf="@+id/itemDone"
         app:hintEnabled="true"
         android:hint="Description"
         android:id="@+id/itemDescriptionWrapper"

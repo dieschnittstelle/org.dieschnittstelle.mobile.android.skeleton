@@ -13,6 +13,7 @@ import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityDetailvi
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
+import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,8 +33,8 @@ public class DetailviewActivity extends AppCompatActivity {
     private Todo todo;
     private ActivityDetailviewBinding binding;
 
+    private MADAsyncOperationRunner operationRunner;
     private ITodoCRUDOperations crudOperations;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,11 +42,21 @@ public class DetailviewActivity extends AppCompatActivity {
         this.binding = DataBindingUtil.setContentView(this,R.layout.activity_detailview);
         this.crudOperations = SimpleTodoCRUDOperations.getInstance();
 
+        this.operationRunner = new MADAsyncOperationRunner(this, null);
+
         long todoId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
-        this.todo = this.crudOperations.readTodo(todoId);
+        //this.todo = this.crudOperations.readTodo(todoId);
 
         if(todoId != -1){
-            this.todo = this.crudOperations.readTodo(todoId);
+            operationRunner.run(
+                    //operation
+                    () -> this.crudOperations.readTodo(todoId),
+                    //onOperationResult
+                    todo -> {
+                        this.todo = todo;
+                        this.binding.setTodo(this.todo);
+                    });
+            //this.todo = this.crudOperations.readTodo(todoId);
         }
 
         Log.i(LOGGER, "showing detailview for todo: " + todo );
@@ -54,8 +65,8 @@ public class DetailviewActivity extends AppCompatActivity {
             this.todo = new Todo();
         }
 
-        //setViewModel generiert von variable aus layout
-        this.binding.setViewmodel(this);
+        this.binding.setController(this);
+        this.binding.setTodo(this.todo);
     }
 
     public Todo getItem(){

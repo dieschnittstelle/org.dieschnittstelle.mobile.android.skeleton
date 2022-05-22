@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,6 +27,8 @@ import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverview
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
+import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
+import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,8 +38,9 @@ public class OverviewActivity extends AppCompatActivity {
 
     private static final String LOGGER = "OverviewActivity";
     private ViewGroup viewRoot;
-    private TextView welcomeText;
     private FloatingActionButton addNewItemButton;
+    private ProgressBar progressBar;
+    private MADAsyncOperationRunner operationRunner;
 
     private ListView listView;
     private ArrayAdapter<Todo> listViewAdapter;
@@ -56,6 +60,7 @@ public class OverviewActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_overview);
 
+
       /*  listView = findViewById(R.id.listView);
 
         listViewAdapter = new ToDoAdapter();
@@ -65,6 +70,8 @@ public class OverviewActivity extends AppCompatActivity {
         listView = findViewById(R.id.listView);
 
         addNewItemButton = findViewById(R.id.fab);
+        progressBar = findViewById(R.id.progressBar);
+        operationRunner = new MADAsyncOperationRunner(this,progressBar);
 
         listViewAdapter = initializeListViewAdapter();
         listView.setAdapter(listViewAdapter);
@@ -81,7 +88,14 @@ public class OverviewActivity extends AppCompatActivity {
 
         crudOperations = SimpleTodoCRUDOperations.getInstance();
 
-        crudOperations.readAllTodos().forEach(todo -> this.addListitemView(todo));
+        operationRunner.run(
+                // run the readAllTodos operation
+                () -> crudOperations.readAllTodos(),
+                // once the operation is done, process the items returned from it
+                todos -> {
+                    todos.forEach(todo -> this.addListitemView(todo));
+                });
+
     }
 
     private ArrayAdapter<Todo> initializeListViewAdapter() {
@@ -128,8 +142,12 @@ public class OverviewActivity extends AppCompatActivity {
                     Log.i(LOGGER, "data: " + result.getData());
                     if(result.getResultCode() == Activity.RESULT_OK) {
                         long itemId = result.getData().getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
-                        Todo todo = crudOperations.readTodo(itemId);
-                        addListitemView(todo);
+                        this.operationRunner.run(
+                                // call operation
+                                () -> crudOperations.readTodo(itemId),
+                                // use operation result
+                                todo -> this.addListitemView(todo)
+                        );
                     }
                 });
     }

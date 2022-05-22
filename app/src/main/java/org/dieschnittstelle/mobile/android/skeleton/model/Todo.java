@@ -1,6 +1,8 @@
 package org.dieschnittstelle.mobile.android.skeleton.model;
 
 import java.io.Serializable;
+import java.util.Objects;
+
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -75,6 +77,9 @@ public class Todo implements Serializable{
     }
 
     public Todo(){}
+
+    @Override
+    public int hashCode(){return Objects.hash(id);}
 
     @Override
     public String toString() {

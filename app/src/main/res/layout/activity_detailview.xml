@@ -2,8 +2,11 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
-            name="viewmodel"
+            name="controller"
             type="org.dieschnittstelle.mobile.android.skeleton.DetailviewActivity"/>
+        <variable
+            name="todo"
+            type="org.dieschnittstelle.mobile.android.skeleton.model.Todo" />
     </data>
 
 <androidx.constraintlayout.widget.ConstraintLayout
@@ -19,7 +22,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:lines="1"
             android:id="@+id/itemName"
-            android:text="@={viewmodel.item.name}"
+            android:text="@={controller.item.name}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <requestFocus/>
@@ -27,7 +30,7 @@
     </com.google.android.material.textfield.TextInputLayout>
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/itemDone"
-        android:checked="@={viewmodel.item.done}"
+        android:checked="@={controller.item.done}"
         android:text="checked?"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -44,7 +47,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:gravity="start"
             android:id="@+id/itemDescription"
-            android:text="@={viewmodel.item.description}"
+            android:text="@={controller.item.description}"
             android:lines="10"
             android:minLines="5"
             android:layout_width="match_parent"
@@ -58,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:onClick="@{() -> viewmodel.onSaveItem()}"
+        android:onClick="@{() -> controller.onSaveItem()}"
         app:srcCompat="@drawable/baseline_save_white_24dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -35,11 +35,23 @@ public class SimpleTodoCRUDOperations implements ITodoCRUDOperations{
 
     @Override
     public List<Todo> readAllTodos() {
+        //TODO remove sleep
+        try{
+            Thread.sleep(1500);
+        }catch (Exception e){
+
+        }
         return new ArrayList<>(todoMap.values());
     }
 
     @Override
     public Todo readTodo(long id) {
+        //TODO remove sleep
+        try{
+            Thread.sleep(1500);
+        }catch (Exception e){
+
+        }
         return todoMap.get(id);
     }
 

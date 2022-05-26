@@ -11,6 +11,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityDetailviewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
+import org.dieschnittstelle.mobile.android.skeleton.model.RoomLocalTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
@@ -25,10 +26,14 @@ public class DetailviewActivity extends AppCompatActivity {
 
     public static final String ARG_ITEM_ID = "itemId";
 
-    private EditText itemNameText;
-    private EditText itemDescriptionText;
-    private CheckBox itemCheckedCheckbox;
-    private FloatingActionButton saveItemButton;
+    public static int STATUS_CREATED = 42;
+    public static int STATUS_UPDATED = 43;
+
+
+    //private EditText itemNameText;
+    //private EditText itemDescriptionText;
+    //private CheckBox itemCheckedCheckbox;
+    //private FloatingActionButton saveItemButton;
 
     private Todo todo;
     private ActivityDetailviewBinding binding;
@@ -40,7 +45,8 @@ public class DetailviewActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.binding = DataBindingUtil.setContentView(this,R.layout.activity_detailview);
-        this.crudOperations = SimpleTodoCRUDOperations.getInstance();
+        //this.crudOperations = SimpleTodoCRUDOperations.getInstance();
+        this.crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
 
         this.operationRunner = new MADAsyncOperationRunner(this, null);
 
@@ -54,7 +60,8 @@ public class DetailviewActivity extends AppCompatActivity {
                     //onOperationResult
                     todo -> {
                         this.todo = todo;
-                        this.binding.setTodo(this.todo);
+                        //this.binding.setTodo(this.todo);
+                        this.binding.setController(this);
                     });
             //this.todo = this.crudOperations.readTodo(todoId);
         }
@@ -66,25 +73,25 @@ public class DetailviewActivity extends AppCompatActivity {
         }
 
         this.binding.setController(this);
-        this.binding.setTodo(this.todo);
+        //this.binding.setTodo(this.todo); //necessary 2505 16:30 controller viewmodel?
     }
 
-    public Todo getItem(){
+    public Todo getTodo(){
         return this.todo;
     }
 
     public void onSaveItem(){
         Intent returnIntent = new Intent();
 
-        if(todo.getId() > 0 ){
-            this.todo = crudOperations.updateTodo(this.todo );
-        }else{
-            this.todo = crudOperations.createTodo(this.todo);
-        }
+        int resultCode = todo.getId() > 0 ? STATUS_UPDATED : STATUS_CREATED;
 
-        returnIntent.putExtra(ARG_ITEM_ID, this.todo.getId());
-
-        setResult(Activity.RESULT_OK, returnIntent);
-        finish();
+        operationRunner.run(() ->
+               todo.getId() > 0 ? crudOperations.updateTodo(todo) : crudOperations.createTodo(todo),
+               todo -> {
+                     this.todo = todo;
+                     returnIntent.putExtra(ARG_ITEM_ID, this.todo.getId());
+                     setResult(resultCode, returnIntent);
+                     finish();
+               });
     }
 }

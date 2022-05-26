@@ -79,8 +79,18 @@ public class Todo implements Serializable{
     public Todo(){}
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Todo todo = (Todo) o;
+        return id == todo.id;
+    }
+
+    @Override
     public int hashCode(){return Objects.hash(id);}
 
+
+    //Todo 82:00
     @Override
     public String toString() {
         return "Todo{" +

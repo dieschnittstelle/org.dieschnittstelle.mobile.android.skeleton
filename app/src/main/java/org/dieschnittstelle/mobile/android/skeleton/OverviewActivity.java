@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,23 +14,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverviewListitemViewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
+import org.dieschnittstelle.mobile.android.skeleton.model.RoomLocalTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
-import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncTask;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OverviewActivity extends AppCompatActivity {
@@ -48,7 +44,7 @@ public class OverviewActivity extends AppCompatActivity {
 
     private ITodoCRUDOperations crudOperations;
 
-    private ActivityResultLauncher<Intent> detailviewForNewItemActivityLauncher;
+    private ActivityResultLauncher<Intent> detailviewActivityLauncher;
 
     //private final List<Todo> todoList = new ArrayList<>();
 
@@ -86,7 +82,8 @@ public class OverviewActivity extends AppCompatActivity {
             onAddNewItem();
         });
 
-        crudOperations = SimpleTodoCRUDOperations.getInstance();
+        //crudOperations = SimpleTodoCRUDOperations.getInstance();
+        crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
 
         operationRunner.run(
                 // run the readAllTodos operation
@@ -135,18 +132,24 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     private void initializeActivityResultLaunchers(){
-        detailviewForNewItemActivityLauncher = registerForActivityResult(
+        detailviewActivityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 (result) -> {
                     Log.i(LOGGER, "resultCode: " + result.getResultCode());
                     Log.i(LOGGER, "data: " + result.getData());
-                    if(result.getResultCode() == Activity.RESULT_OK) {
+                    if(result.getResultCode() == DetailviewActivity.STATUS_CREATED || result.getResultCode() == DetailviewActivity.STATUS_UPDATED) {
                         long itemId = result.getData().getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
                         this.operationRunner.run(
                                 // call operation
                                 () -> crudOperations.readTodo(itemId),
                                 // use operation result
-                                todo -> this.addListitemView(todo)
+                                todo -> {
+                                    if(result.getResultCode() == DetailviewActivity.STATUS_CREATED) {
+                                        onTodoCreated(todo);
+                                    }else if (result.getResultCode() == DetailviewActivity.STATUS_UPDATED){
+                                        onTodoUpdated(todo);
+                                    }
+                                }
                         );
                     }
                 });
@@ -165,28 +168,29 @@ public class OverviewActivity extends AppCompatActivity {
         Intent detailviewIntent = new Intent(this, DetailviewActivity.class);
         detailviewIntent.putExtra(DetailviewActivity.ARG_ITEM_ID, todo.getId());
         Log.i(LOGGER, "calling detailview vor todo: " + todo );
-        startActivity(detailviewIntent);
+       //startActivity(detailviewIntent);
+        detailviewActivityLauncher.launch(detailviewIntent);
     }
 
-    private static int CALL_DETAILVIEW_FOR_NEW_ITEM = 1;
+    //private static int CALL_DETAILVIEW_FOR_NEW_ITEM = 1;
 
     private void onAddNewItem(){
         Intent detailviewIntentForAddNewItem = new Intent(this, DetailviewActivity.class);
-        detailviewForNewItemActivityLauncher.launch(detailviewIntentForAddNewItem);
+        detailviewActivityLauncher.launch(detailviewIntentForAddNewItem);
     }
 
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if(requestCode == CALL_DETAILVIEW_FOR_NEW_ITEM){
-            if(resultCode == Activity.RESULT_OK){
-                long todoId = data.getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
-                //showMessage("received: " + name);
-                addListitemView(name);
-            }
-        }else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-    }*/
+    private void onTodoCreated(Todo todo){
+        this.addListitemView(todo);
+    }
+
+    private void onTodoUpdated(Todo todo){
+        Todo todoToBeUpdated= this.listViewAdapter.getItem(this.listViewAdapter.getPosition(todo));
+        todoToBeUpdated.setName(todo.getName());
+        todoToBeUpdated.setDescription(todo.getDescription());
+        todoToBeUpdated.setDone(todo.isDone());
+        //.... alle
+        this.listViewAdapter.notifyDataSetChanged();
+    }
 
     private void showMessage(String msg){
         Snackbar.make(viewRoot, msg, Snackbar.LENGTH_INDEFINITE).show();

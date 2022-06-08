@@ -5,11 +5,14 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.SupportMenuInflater;
 import androidx.databinding.DataBindingUtil;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,6 +31,7 @@ import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class OverviewActivity extends AppCompatActivity {
@@ -84,6 +88,8 @@ public class OverviewActivity extends AppCompatActivity {
 
         //crudOperations = SimpleTodoCRUDOperations.getInstance();
         crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
+        //TODO Retrofit aufrufen bzw. nach REQ implementieren (gleiches fuer Detail)
+
 
         operationRunner.run(
                 // run the readAllTodos operation
@@ -194,5 +200,30 @@ public class OverviewActivity extends AppCompatActivity {
 
     private void showMessage(String msg){
         Snackbar.make(viewRoot, msg, Snackbar.LENGTH_INDEFINITE).show();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.overview_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId() == R.id.sortList){
+            //showMessage("SORT LIST");
+            sortTodos();
+            return true;
+        }else if(item.getItemId() == R.id.deleteAllItemsLocally){
+            showMessage("DELETE ALL ITEMS LOCALLY");
+            return true;
+        }else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void sortTodos(){
+        this.listViewItems.sort(Comparator.comparing(Todo::getName));
+        this.listViewAdapter.notifyDataSetChanged();
     }
 }

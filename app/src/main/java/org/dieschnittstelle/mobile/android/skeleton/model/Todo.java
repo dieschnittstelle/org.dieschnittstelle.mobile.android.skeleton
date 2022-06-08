@@ -20,6 +20,9 @@ public class Todo implements Serializable{
 
     private long expiry;
 
+    //@SerializedName("done")
+    //private boolean checked;
+    //nicht zu berücksichtigende mit transient
     private boolean done;
 
     private boolean favourite;

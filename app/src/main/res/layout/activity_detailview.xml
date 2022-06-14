@@ -31,12 +31,22 @@
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/itemDone"
         android:checked="@={controller.todo.done}"
-        android:text="checked?"
+        android:text="Erledigt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/itemNameWrapper">
     </com.google.android.material.checkbox.MaterialCheckBox>
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/itemFavorite"
+        android:checked="@={controller.todo.favourite}"
+        android:text="Wichtig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/itemDone"
+        app:layout_constraintTop_toBottomOf="@+id/itemNameWrapper">
+    </com.google.android.material.checkbox.MaterialCheckBox>
+
     <com.google.android.material.textfield.TextInputLayout
         app:layout_constraintTop_toBottomOf="@+id/itemDone"
         app:hintEnabled="true"
@@ -53,6 +63,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        app:layout_constraintTop_toBottomOf="@id/itemDescriptionWrapper"
+        app:hintEnabled="true"
+        android:hint="Expiry"
+        android:id="@+id/itemExpiryWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputEditText
+            android:gravity="start"
+            android:id="@+id/itemExpiry"
+            android:inputType="date"
+            android:hint="DD.MM.YYYY"
+            android:focusable="false"
+            android:text="@{controller.todo.expiry}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> controller.onExpirySelected()}"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

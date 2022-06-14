@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.SupportMenuInflater;
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.BindingConversion;
 import androidx.databinding.DataBindingUtil;
 
 import android.content.ComponentCallbacks;
@@ -20,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -32,9 +35,12 @@ import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperatio
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class OverviewActivity extends AppCompatActivity {
 
@@ -208,6 +214,8 @@ public class OverviewActivity extends AppCompatActivity {
         todoToBeUpdated.setName(todo.getName());
         todoToBeUpdated.setDescription(todo.getDescription());
         todoToBeUpdated.setDone(todo.isDone());
+        todoToBeUpdated.setFavourite(todo.isFavourite());
+        todoToBeUpdated.setExpiry(todo.getExpiry());
         //.... alle
         //this.listViewAdapter.notifyDataSetChanged();
         sortTodos();
@@ -251,5 +259,15 @@ public class OverviewActivity extends AppCompatActivity {
                     showMessage("Updated: " + updateditem.getName());
                 }
         );
+    }
+
+    @BindingConversion
+    public static String convertLongToFormattedDateString(long expiry){
+        Log.i(LOGGER, "ConvertLongTo: " + expiry);
+        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
+        String r =
+                df.format(new Date(expiry));
+        Log.i(LOGGER, "ConvertLongTo: " + r);
+        return(r);
     }
 }

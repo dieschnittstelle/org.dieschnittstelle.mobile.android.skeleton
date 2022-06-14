@@ -4,6 +4,9 @@
     <variable
         name="todo"
         type="org.dieschnittstelle.mobile.android.skeleton.model.Todo" />
+    <variable
+        name="controller"
+        type="org.dieschnittstelle.mobile.android.skeleton.OverviewActivity" />
 </data>
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,6 +17,7 @@
             android:layout_gravity="center_vertical"
             android:id="@+id/itemChecked"
             android:checked="@={todo.done}"
+            android:onClick="@{() -> controller.onCheckedChangedInListView(todo)}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/> <!-- @= - bidirect binding -->
         <TextView

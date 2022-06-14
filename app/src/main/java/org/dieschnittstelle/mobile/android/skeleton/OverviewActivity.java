@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.SupportMenuInflater;
 import androidx.databinding.DataBindingUtil;
 
+import android.content.ComponentCallbacks;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverviewListitemViewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
+import org.dieschnittstelle.mobile.android.skeleton.model.RetrofitRemoteTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.RoomLocalTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
@@ -37,6 +39,11 @@ import java.util.List;
 public class OverviewActivity extends AppCompatActivity {
 
     private static final String LOGGER = "OverviewActivity";
+
+    public static  final Comparator<Todo> NAME_COMPARATOR = Comparator.comparing(Todo::getName);
+    public static  final Comparator<Todo> CHECKED_AND_NAME_COMPARATOR = Comparator.comparing(Todo::isDone).reversed().thenComparing(Todo::getName); //TODO die erledigten sollen nach unten
+
+
     private ViewGroup viewRoot;
     private FloatingActionButton addNewItemButton;
     private ProgressBar progressBar;
@@ -53,6 +60,8 @@ public class OverviewActivity extends AppCompatActivity {
     //private final List<Todo> todoList = new ArrayList<>();
 
     //private ListAdapter<Todo> listViewAdapter;
+
+    private Comparator<Todo> currentComparator = NAME_COMPARATOR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +96,9 @@ public class OverviewActivity extends AppCompatActivity {
         });
 
         //crudOperations = SimpleTodoCRUDOperations.getInstance();
-        crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
+        //crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
+        //crudOperations = new RetrofitRemoteTodoCRUDOperations();
+        crudOperations = ((TodoApplication) getApplication()).getCrudOperations();
         //TODO Retrofit aufrufen bzw. nach REQ implementieren (gleiches fuer Detail)
 
 
@@ -97,6 +108,7 @@ public class OverviewActivity extends AppCompatActivity {
                 // once the operation is done, process the items returned from it
                 todos -> {
                     todos.forEach(todo -> this.addListitemView(todo));
+                    sortTodos();
                 });
 
     }
@@ -127,6 +139,7 @@ public class OverviewActivity extends AppCompatActivity {
 //                itemNameText.setText(todo.getName());
 //                itemCheckedCheckbox.setChecked(todo.isDone());
                 todoBinding.setTodo(todo);
+                todoBinding.setController(OverviewActivity.this);
 
                 //the view in which data is shown
                 View todoView = todoBinding.getRoot();
@@ -187,6 +200,7 @@ public class OverviewActivity extends AppCompatActivity {
 
     private void onTodoCreated(Todo todo){
         this.addListitemView(todo);
+        sortTodos();
     }
 
     private void onTodoUpdated(Todo todo){
@@ -195,11 +209,12 @@ public class OverviewActivity extends AppCompatActivity {
         todoToBeUpdated.setDescription(todo.getDescription());
         todoToBeUpdated.setDone(todo.isDone());
         //.... alle
-        this.listViewAdapter.notifyDataSetChanged();
+        //this.listViewAdapter.notifyDataSetChanged();
+        sortTodos();
     }
 
     private void showMessage(String msg){
-        Snackbar.make(viewRoot, msg, Snackbar.LENGTH_INDEFINITE).show();
+        Snackbar.make(viewRoot, msg, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -212,6 +227,7 @@ public class OverviewActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.sortList){
             //showMessage("SORT LIST");
+            this.currentComparator = CHECKED_AND_NAME_COMPARATOR;
             sortTodos();
             return true;
         }else if(item.getItemId() == R.id.deleteAllItemsLocally){
@@ -223,7 +239,17 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     public void sortTodos(){
-        this.listViewItems.sort(Comparator.comparing(Todo::getName));
+        this.listViewItems.sort(this.currentComparator);
         this.listViewAdapter.notifyDataSetChanged();
+    }
+
+    public void onCheckedChangedInListView(Todo todo){
+        this.operationRunner.run(
+                () -> crudOperations.updateTodo(todo),
+                updateditem -> {
+                    onTodoUpdated(updateditem);
+                    showMessage("Updated: " + updateditem.getName());
+                }
+        );
     }
 }

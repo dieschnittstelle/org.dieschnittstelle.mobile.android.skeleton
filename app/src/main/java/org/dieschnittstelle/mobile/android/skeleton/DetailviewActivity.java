@@ -1,6 +1,7 @@
 package org.dieschnittstelle.mobile.android.skeleton;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,7 +47,8 @@ public class DetailviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.binding = DataBindingUtil.setContentView(this,R.layout.activity_detailview);
         //this.crudOperations = SimpleTodoCRUDOperations.getInstance();
-        this.crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
+        ///this.crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
+        this.crudOperations = ((TodoApplication) getApplication()).getCrudOperations();
 
         this.operationRunner = new MADAsyncOperationRunner(this, null);
 

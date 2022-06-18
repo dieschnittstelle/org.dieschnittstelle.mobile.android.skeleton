@@ -1,9 +1,11 @@
 package org.dieschnittstelle.mobile.android.skeleton.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 // TODO get model from web app (sample web api)
@@ -18,7 +20,7 @@ public class Todo implements Serializable{
 
     private String description;
 
-    private long expiry;
+    private long expiry = System.currentTimeMillis();
 
     //@SerializedName("done")
     //private boolean checked;

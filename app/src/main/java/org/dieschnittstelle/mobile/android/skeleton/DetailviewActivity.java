@@ -1,37 +1,42 @@
 package org.dieschnittstelle.mobile.android.skeleton;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
+import android.view.inputmethod.EditorInfo;
 import android.widget.DatePicker;
-import android.widget.EditText;
+import android.widget.TimePicker;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.timepicker.TimeFormat;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityDetailviewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
-import org.dieschnittstelle.mobile.android.skeleton.model.RoomLocalTodoCRUDOperations;
-import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.BindingConversion;
 import androidx.databinding.DataBindingUtil;
 
-public class DetailviewActivity extends AppCompatActivity {
+public class DetailviewActivity extends AppCompatActivity implements DetailviewViewmodel{
 
     private static final String LOGGER = "DetailViewActivity";
 
@@ -41,6 +46,7 @@ public class DetailviewActivity extends AppCompatActivity {
     public static int STATUS_UPDATED = 43;
 
 
+    String errorStatus = null;
     //private EditText itemNameText;
     //private EditText itemDescriptionText;
     //private CheckBox itemCheckedCheckbox;
@@ -52,10 +58,21 @@ public class DetailviewActivity extends AppCompatActivity {
     private MADAsyncOperationRunner operationRunner;
     private ITodoCRUDOperations crudOperations;
 
+    private ActivityResultLauncher<Intent> selectContactLauncher;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.binding = DataBindingUtil.setContentView(this,R.layout.activity_detailview);
+
+        this.selectContactLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if(result.getResultCode() == Activity.RESULT_OK){
+                        onContactSelected(result.getData());
+                    }
+                }
+        );
         //this.crudOperations = SimpleTodoCRUDOperations.getInstance();
         ///this.crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
         this.crudOperations = ((TodoApplication) getApplication()).getCrudOperations();
@@ -128,5 +145,86 @@ public class DetailviewActivity extends AppCompatActivity {
             }
         }, calendar.get(Calendar.YEAR) , calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
+
+        //MaterialDatePicker.Builder.datePicker().setTitleText("sdf").build().getDialog().show();
+
+        /*TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                Calendar newTime = Calendar.getInstance();
+                newTime.setTimeInMillis(todo.getExpiry());
+                newTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                newTime.set(Calendar.MINUTE, minute);
+
+                todo.setExpiry(newTime.getTimeInMillis());
+                String r = SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, TimeFormat.CLOCK_24H).format(newTime);
+                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
+            }
+        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);*/
+
+        //TODO trennen von expiry in transient date und time...
+        //timePickerDialog.show();
+        //DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
+        //android.text.format.DateUtils.formatDateTime(this, newDate.getTimeInMillis(), );
+        //String r = SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, TimeFormat.CLOCK_24H).format(newDate);
+        //String r = df.format(new Date(newDate.getTimeInMillis()));
+
+        //todo.setExpiry(newDate.getTimeInMillis());
+        //((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
+    }
+
+    @Override
+    public boolean checkFieldInputCompleted(View v, int actionId, boolean hasFocus, boolean isCalledOnFocusChange){
+        Log.i(LOGGER, "checkFieldInputCompleted" + v + ", ");
+        if(isCalledOnFocusChange ? !hasFocus
+                : (actionId == EditorInfo.IME_ACTION_DONE
+                || actionId == EditorInfo.IME_ACTION_NEXT)){
+            if(todo.getName().length() < 5) {
+                errorStatus = "Name to short!";
+                this.binding.setController(this);
+            }
+        }
+        return false;
+    }
+
+    public String getErrorStatus(){
+        return errorStatus;
+    }
+
+    @Override
+    public boolean onNameFieldInputChanged(){
+        Log.i(LOGGER, "onNameFieldInput(): error status is currently: " + this.errorStatus);
+        if(this.errorStatus != null) {
+            this.errorStatus = null;
+            this.binding.setController(this);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.detailview_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(item.getItemId()==R.id.selectContact){
+            selectContact();
+            return true;
+        }else{
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void selectContact(){
+        Log.i(LOGGER, "selectContact");
+        Intent selectContactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        this.selectContactLauncher.launch(selectContactIntent);
+    }
+
+    public void onContactSelected(Intent resultData){
+        Log.i(LOGGER, "onContactSelected(): " + resultData);
+        //showContactDetails(resultData.getData());
     }
 }

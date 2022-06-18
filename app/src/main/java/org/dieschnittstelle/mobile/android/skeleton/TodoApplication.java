@@ -2,10 +2,13 @@ package org.dieschnittstelle.mobile.android.skeleton;
 
 import android.app.Application;
 import android.util.Log;
+import android.widget.Toast;
 
+import org.dieschnittstelle.mobile.android.skeleton.model.CachedTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.RetrofitRemoteTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.RoomLocalTodoCRUDOperations;
+import org.dieschnittstelle.mobile.android.skeleton.model.SyncedTodoCRUDOperations;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -21,9 +24,19 @@ public class TodoApplication extends Application {
         super.onCreate();
         try {
             if (checkConnectivity().get()) {
-                this.crudOperations = new RetrofitRemoteTodoCRUDOperations();
+                ITodoCRUDOperations crudOperations = new SyncedTodoCRUDOperations(
+                        new RoomLocalTodoCRUDOperations(this),
+                        new RetrofitRemoteTodoCRUDOperations());
+                this.crudOperations = new CachedTodoCRUDOperations(crudOperations);
+                /*this.crudOperations = new SyncedTodoCRUDOperations(
+                        new RoomLocalTodoCRUDOperations(this),
+                        new RetrofitRemoteTodoCRUDOperations()
+                );*/
+                Toast.makeText(this, "Using synced data access...", Toast.LENGTH_LONG).show();
             } else {
-                this.crudOperations = new RoomLocalTodoCRUDOperations(this);
+                this.crudOperations = new CachedTodoCRUDOperations(new RoomLocalTodoCRUDOperations(this));
+                //this.crudOperations = new  RoomLocalTodoCRUDOperations(this);
+                Toast.makeText(this, "Remote api not accessible. Using local data access...", Toast.LENGTH_LONG).show();
             }
         }catch (Exception e){
             throw new RuntimeException("Got exception trying to run future for checking connectivity: " + e);
@@ -41,8 +54,8 @@ public class TodoApplication extends Application {
         new Thread(() -> {
             try {
                 HttpURLConnection con = (HttpURLConnection) new URL("http://10.0.2.2:8080/api/todos").openConnection();
-                con.setReadTimeout(500);
-                con.setConnectTimeout(500);
+                con.setReadTimeout(1500);
+                con.setConnectTimeout(1500);
                 con.setRequestMethod("GET");
                 con.setDoInput(true);
                 con.connect();

@@ -5,12 +5,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.SupportMenuInflater;
-import androidx.databinding.BindingAdapter;
 import androidx.databinding.BindingConversion;
 import androidx.databinding.DataBindingUtil;
 
-import android.content.ComponentCallbacks;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,16 +19,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverviewListitemViewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
-import org.dieschnittstelle.mobile.android.skeleton.model.RetrofitRemoteTodoCRUDOperations;
-import org.dieschnittstelle.mobile.android.skeleton.model.RoomLocalTodoCRUDOperations;
-import org.dieschnittstelle.mobile.android.skeleton.model.SimpleTodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
@@ -114,7 +107,7 @@ public class OverviewActivity extends AppCompatActivity {
                 // once the operation is done, process the items returned from it
                 todos -> {
                     todos.forEach(todo -> this.addListitemView(todo));
-                    sortTodos();
+                    sortTodos(); //hier knallts wenn "Name" leer, validation greift noch nicht
                 });
 
     }

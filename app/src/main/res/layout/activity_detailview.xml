@@ -23,6 +23,11 @@
             android:lines="1"
             android:id="@+id/itemName"
             android:text="@={controller.todo.name}"
+            android:singleLine="true"
+            android:error="@{controller.errorStatus}"
+            android:onFocusChange="@{(view,hasFocus) -> controller.checkFieldInputCompleted(view, -1, hasFocus, true)}"
+            android:onEditorAction="@{(view, actionId, event) -> controller.checkFieldInputCompleted(view, actionId, false, false)}"
+            android:onTextChanged="@{(a,b,c,d) -> controller.onNameFieldInputChanged()}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <requestFocus/>
@@ -75,7 +80,7 @@
             android:gravity="start"
             android:id="@+id/itemExpiry"
             android:inputType="date"
-            android:hint="DD.MM.YYYY"
+            android:hint="DD.MM.YY"
             android:focusable="false"
             android:text="@{controller.todo.expiry}"
             android:layout_width="wrap_content"
@@ -94,5 +99,6 @@
         android:layout_margin="16dp"
         android:onClick="@{() -> controller.onSaveItem()}"
         app:srcCompat="@drawable/baseline_save_white_24dp"/>
+        <!--android:enabled="@{controller.errorStatus!=null}"-->
 </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

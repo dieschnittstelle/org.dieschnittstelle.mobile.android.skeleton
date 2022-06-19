@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
+        <import type="android.view.View"/>
         <variable
             name="controller"
             type="org.dieschnittstelle.mobile.android.skeleton.DetailviewActivity"/>
@@ -71,21 +72,37 @@
 
     <com.google.android.material.textfield.TextInputLayout
         app:layout_constraintTop_toBottomOf="@id/itemDescriptionWrapper"
-        app:hintEnabled="true"
-        android:hint="Expiry"
         android:id="@+id/itemExpiryWrapper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Fällig am">
         <com.google.android.material.textfield.TextInputEditText
             android:gravity="start"
             android:id="@+id/itemExpiry"
             android:inputType="date"
-            android:hint="DD.MM.YY"
             android:focusable="false"
-            android:text="@{controller.todo.expiry}"
-            android:layout_width="wrap_content"
+            app:expiryDate="@{controller.todo.expiry}"
+            android:layout_width="300px"
             android:layout_height="wrap_content"
             android:onClick="@{() -> controller.onExpirySelected()}"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        app:layout_constraintTop_toBottomOf="@id/itemDescriptionWrapper"
+        app:layout_constraintLeft_toRightOf="@+id/itemExpiryWrapper"
+        android:id="@+id/itemExpiryTimeWrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="um">
+        <com.google.android.material.textfield.TextInputEditText
+            android:gravity="start"
+            android:id="@+id/itemExpiryTime"
+            android:inputType="time"
+            android:focusable="false"
+            app:expiryTime="@{controller.todo.expiry}"
+            android:layout_width="250px"
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> controller.onExpiryTimeSelected()}"
             />
     </com.google.android.material.textfield.TextInputLayout>
 

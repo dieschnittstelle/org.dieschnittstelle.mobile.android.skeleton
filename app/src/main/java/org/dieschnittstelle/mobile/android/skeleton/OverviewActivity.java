@@ -22,6 +22,7 @@ import android.widget.ProgressBar;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.timepicker.TimeFormat;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverviewListitemViewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
@@ -29,6 +30,7 @@ import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -256,11 +258,8 @@ public class OverviewActivity extends AppCompatActivity {
 
     @BindingConversion
     public static String convertLongToFormattedDateString(long expiry){
-        Log.i(LOGGER, "ConvertLongTo: " + expiry);
-        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
-        String r =
-                df.format(new Date(expiry));
-        Log.i(LOGGER, "ConvertLongTo: " + r);
-        return(r);
+        return expiry > 0
+                ? DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY).format(new Date(expiry))
+                : null;
     }
 }

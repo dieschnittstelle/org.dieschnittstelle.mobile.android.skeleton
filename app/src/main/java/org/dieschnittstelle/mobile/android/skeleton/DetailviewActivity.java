@@ -12,11 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.DatePicker;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.timepicker.TimeFormat;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityDetailviewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
@@ -24,6 +23,7 @@ import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -34,23 +34,34 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.BindingAdapter;
 import androidx.databinding.DataBindingUtil;
 
 public class DetailviewActivity extends AppCompatActivity implements DetailviewViewmodel{
 
     private static final String LOGGER = "DetailViewActivity";
+    private static final DateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm", Locale.GERMANY);
 
     public static final String ARG_ITEM_ID = "itemId";
 
     public static int STATUS_CREATED = 42;
     public static int STATUS_UPDATED = 43;
 
-
     String errorStatus = null;
-    //private EditText itemNameText;
-    //private EditText itemDescriptionText;
-    //private CheckBox itemCheckedCheckbox;
-    //private FloatingActionButton saveItemButton;
+
+    /* and there was light. And God saw the light, that it was good;
+     *
+     * Konstante repräsentiert das Ende des ersten Tages
+     * Falls für die Faelligkeit nur eine Uhrzeit (aber kein Tag) ausgewaehlt wurde, liegt expiry
+     * zwischen 0 und diesem Wert. Durch den kleinen Hack verliert man zwar den ersten Tag als
+     * Faelligkeitsdatum, aber das kann man verschmerzen ;-) und erspart sich das Aufteilen von
+     * expiry in zwei Variablen (date/time)
+     *
+     * Nachtrag: 06/19/22 - Implementation fuer die Aktualisierung hat sich geaendert und diese
+     * Variable könnte auch 0 sein, ich lass das aber mal als Osterei drin.
+     *
+     * */
+    private static final int  LET_THERE_BE_LIGHT = 82799;
 
     private Todo todo;
     private ActivityDetailviewBinding binding;
@@ -114,6 +125,17 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
 
         int resultCode = todo.getId() > 0 ? STATUS_UPDATED : STATUS_CREATED;
 
+        String datePartOfExpiry = ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).getText().toString();
+        String timePartOfExpiry = ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiryTime)).getText().toString();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yy HH:mm", Locale.GERMANY);
+        try {
+            Date updateExpiry = formatter.parse(datePartOfExpiry + " " + timePartOfExpiry);
+            todo.setExpiry(updateExpiry.getTime());
+        }catch (ParseException e){
+            Log.i(LOGGER, "ParseException");
+        }
+
         operationRunner.run(() ->
                todo.getId() > 0 ? crudOperations.updateTodo(todo) : crudOperations.createTodo(todo),
                todo -> {
@@ -125,9 +147,10 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
     }
 
     public void onExpirySelected(){
-        Log.i(LOGGER, "Expiry selected");
-        final Calendar calendar = Calendar.getInstance ();
-        calendar.setTimeInMillis(todo.getExpiry());
+        final Calendar calendar = Calendar.getInstance();
+
+        if(todo.getExpiry()>LET_THERE_BE_LIGHT)
+            calendar.setTimeInMillis(todo.getExpiry());
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -137,40 +160,35 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
                 newDate.set(Calendar.MONTH, month);
                 newDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
+                //an der Stelle verzichten wir auf L10n
                 DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
                 String r = df.format(new Date(newDate.getTimeInMillis()));
 
-                todo.setExpiry(newDate.getTimeInMillis());
+                //todo.setExpiry(newDate.getTimeInMillis());
                 ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
+                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiryTime)).setEnabled(true);
             }
         }, calendar.get(Calendar.YEAR) , calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
+    }
 
-        //MaterialDatePicker.Builder.datePicker().setTitleText("sdf").build().getDialog().show();
+    public void onExpiryTimeSelected(){
+        final Calendar calendar = Calendar.getInstance();
+        if(todo.getExpiry()>LET_THERE_BE_LIGHT)
+            calendar.setTimeInMillis(todo.getExpiry());
 
-        /*TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 Calendar newTime = Calendar.getInstance();
                 newTime.setTimeInMillis(todo.getExpiry());
                 newTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 newTime.set(Calendar.MINUTE, minute);
-
-                todo.setExpiry(newTime.getTimeInMillis());
-                String r = SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, TimeFormat.CLOCK_24H).format(newTime);
-                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
+                String r = TIME_FORMATTER.format(newTime.getTime());
+                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiryTime)).setText(r);
             }
-        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);*/
-
-        //TODO trennen von expiry in transient date und time...
-        //timePickerDialog.show();
-        //DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
-        //android.text.format.DateUtils.formatDateTime(this, newDate.getTimeInMillis(), );
-        //String r = SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, TimeFormat.CLOCK_24H).format(newDate);
-        //String r = df.format(new Date(newDate.getTimeInMillis()));
-
-        //todo.setExpiry(newDate.getTimeInMillis());
-        //((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
+        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+        timePickerDialog.show();
     }
 
     @Override
@@ -227,4 +245,23 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
         Log.i(LOGGER, "onContactSelected(): " + resultData);
         //showContactDetails(resultData.getData());
     }
+
+
+    @BindingAdapter("expiryDate")
+    public static void bindExpiryDate(@NonNull TextView textView, long time){
+        if(time>0){
+            DateFormat df = SimpleDateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
+            textView.setText(df.format(new Date(time)));
+        }
+
+    }
+    @BindingAdapter("expiryTime")
+    public static void bindExpiryTime(@NonNull TextView textView, long time){
+        if(time>0){
+            DateFormat df = new SimpleDateFormat("HH:mm");
+            textView.setText(df.format(new Date(time)));
+        }
+
+    }
+
 }

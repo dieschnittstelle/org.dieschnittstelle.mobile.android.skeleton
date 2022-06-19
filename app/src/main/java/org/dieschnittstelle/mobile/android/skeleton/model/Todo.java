@@ -20,7 +20,7 @@ public class Todo implements Serializable{
 
     private String description;
 
-    private long expiry = System.currentTimeMillis();
+    private long expiry; // = System.currentTimeMillis();
 
     //@SerializedName("done")
     //private boolean checked;

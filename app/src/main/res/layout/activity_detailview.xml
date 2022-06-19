@@ -72,6 +72,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         app:layout_constraintTop_toBottomOf="@id/itemDescriptionWrapper"
+        app:layout_constraintLeft_toLeftOf="parent"
         android:id="@+id/itemExpiryWrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

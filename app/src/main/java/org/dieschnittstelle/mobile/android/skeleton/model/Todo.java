@@ -77,9 +77,9 @@ public class Todo implements Serializable{
 	this.favourite = favourite;
     }
 
-    public Todo(String name){
+    /*public Todo(String name){
         this.name = name;
-    }
+    }*/
 
     public Todo(){}
 

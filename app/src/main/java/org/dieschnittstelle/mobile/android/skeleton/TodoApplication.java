@@ -28,14 +28,9 @@ public class TodoApplication extends Application {
                         new RoomLocalTodoCRUDOperations(this),
                         new RetrofitRemoteTodoCRUDOperations());
                 this.crudOperations = new CachedTodoCRUDOperations(crudOperations);
-                /*this.crudOperations = new SyncedTodoCRUDOperations(
-                        new RoomLocalTodoCRUDOperations(this),
-                        new RetrofitRemoteTodoCRUDOperations()
-                );*/
                 Toast.makeText(this, "Using synced data access...", Toast.LENGTH_LONG).show();
             } else {
                 this.crudOperations = new CachedTodoCRUDOperations(new RoomLocalTodoCRUDOperations(this));
-                //this.crudOperations = new  RoomLocalTodoCRUDOperations(this);
                 Toast.makeText(this, "Remote api not accessible. Using local data access...", Toast.LENGTH_LONG).show();
             }
         }catch (Exception e){

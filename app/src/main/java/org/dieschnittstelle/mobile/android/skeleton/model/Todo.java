@@ -1,11 +1,9 @@
 package org.dieschnittstelle.mobile.android.skeleton.model;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Objects;
 
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 // TODO get model from web app (sample web api)
@@ -20,11 +18,8 @@ public class Todo implements Serializable{
 
     private String description;
 
-    private long expiry; // = System.currentTimeMillis();
+    private long expiry;
 
-    //@SerializedName("done")
-    //private boolean checked;
-    //nicht zu berücksichtigende mit transient
     private boolean done;
 
     private boolean favourite;
@@ -77,10 +72,6 @@ public class Todo implements Serializable{
 	this.favourite = favourite;
     }
 
-    /*public Todo(String name){
-        this.name = name;
-    }*/
-
     public Todo(){}
 
     @Override
@@ -94,8 +85,6 @@ public class Todo implements Serializable{
     @Override
     public int hashCode(){return Objects.hash(id);}
 
-
-    //Todo 82:00
     @Override
     public String toString() {
         return "Todo{" +

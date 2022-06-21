@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class CachedTodoCRUDOperations implements ITodoCRUDOperations{
 
@@ -26,12 +25,10 @@ public class CachedTodoCRUDOperations implements ITodoCRUDOperations{
 
     @Override
     public List<Todo> readAllTodos() {
-        Log.i("CachedTodoCRUDOperations", "read all todos from cached");
-     if(todoMap.size() == 0 ){
-         realCrudOperations.readAllTodos().forEach(todo -> todoMap.put(todo.getId(), todo));
-     }
+        todoMap.clear();
+        realCrudOperations.readAllTodos().forEach(todo -> todoMap.put(todo.getId(), todo));
 
-     return new ArrayList<>(todoMap.values());
+        return new ArrayList<>(todoMap.values());
     }
 
     @Override
@@ -57,9 +54,17 @@ public class CachedTodoCRUDOperations implements ITodoCRUDOperations{
     public boolean deleteTodo(long id) {
         if(this.realCrudOperations.deleteTodo(id)){
             todoMap.remove(id);
-            return true;
-        }else{
-            return true;
         }
+        return true;
     }
+
+    @Override
+    public boolean deleteAllTodos(boolean remote) {
+        this.realCrudOperations.deleteAllTodos(remote);
+        if(!remote) {
+            todoMap.clear();
+        }
+        return true;
+    }
+
 }

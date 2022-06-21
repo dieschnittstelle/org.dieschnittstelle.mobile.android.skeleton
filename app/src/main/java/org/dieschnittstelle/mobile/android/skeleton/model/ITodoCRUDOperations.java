@@ -16,4 +16,8 @@ public interface ITodoCRUDOperations {
 
     // D: delete
     public boolean deleteTodo(long id);
+
+    // introducing remote here feels utterly wrong bc the interface shouldn't know anything
+    // about implementation
+    public boolean deleteAllTodos(boolean remote);
 }

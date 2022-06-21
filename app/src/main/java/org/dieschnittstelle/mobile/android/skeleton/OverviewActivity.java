@@ -1,13 +1,5 @@
 package org.dieschnittstelle.mobile.android.skeleton;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.BindingConversion;
-import androidx.databinding.DataBindingUtil;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +14,6 @@ import android.widget.ProgressBar;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.timepicker.TimeFormat;
 
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverviewListitemViewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
@@ -30,12 +21,20 @@ import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.BindingConversion;
+import androidx.databinding.DataBindingUtil;
 
 public class OverviewActivity extends AppCompatActivity {
 
@@ -92,9 +91,7 @@ public class OverviewActivity extends AppCompatActivity {
 
         initializeActivityResultLaunchers();
 
-        addNewItemButton.setOnClickListener(v -> {
-            onAddNewItem();
-        });
+        addNewItemButton.setOnClickListener(v -> onAddNewItem());
 
         //crudOperations = SimpleTodoCRUDOperations.getInstance();
         //crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
@@ -103,15 +100,20 @@ public class OverviewActivity extends AppCompatActivity {
         //TODO Retrofit aufrufen bzw. nach REQ implementieren (gleiches fuer Detail)
 
 
+        syncAllTodos();
+
+    }
+
+    private void syncAllTodos() {
+        Log.i("SYNC ", "syncAllTodos");
         operationRunner.run(
                 // run the readAllTodos operation
                 () -> crudOperations.readAllTodos(),
                 // once the operation is done, process the items returned from it
                 todos -> {
-                    todos.forEach(todo -> this.addListitemView(todo));
+                    todos.forEach(this::addListitemView);
                     sortTodos(); //hier knallts wenn "Name" leer, validation greift noch nicht
                 });
-
     }
 
     private ArrayAdapter<Todo> initializeListViewAdapter() {
@@ -228,15 +230,21 @@ public class OverviewActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId() == R.id.sortList){
-            //showMessage("SORT LIST");
+        if(item.getItemId()==R.id.sortList) {
             this.currentComparator = CHECKED_AND_NAME_COMPARATOR;
             sortTodos();
             return true;
-        }else if(item.getItemId() == R.id.deleteAllItemsLocally){
-            showMessage("DELETE ALL ITEMS LOCALLY");
+        }else if(item.getItemId()==R.id.deleteAllItemsLocally) {
+            deleteAll(false);
             return true;
-        }else {
+        }else if (item.getItemId()==R.id.deleteAllItemsRemote) {
+            deleteAll(true);
+            return true;
+        }else if(item.getItemId() == R.id.syncAllItems) {
+            listViewItems.clear();
+            syncAllTodos();
+            return true;
+        }else{
             return super.onOptionsItemSelected(item);
         }
     }
@@ -261,5 +269,24 @@ public class OverviewActivity extends AppCompatActivity {
         return expiry > 0
                 ? DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY).format(new Date(expiry))
                 : null;
+    }
+
+    private void deleteAll(boolean remote){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Wirklich Löschen")
+                .setNeutralButton("Cancel", null)
+                .setPositiveButton("OK", (dialog, which) -> operationRunner.run(
+                        () -> crudOperations.deleteAllTodos(remote),
+                        success -> {
+                            if(!remote){
+                              listViewItems.clear();
+                              listViewAdapter.notifyDataSetInvalidated();
+                            }
+
+                            showMessage(remote ? "Alle entfernten Todos gelöscht" : "Alle lokalen Todos gelöscht");
+                        }
+                ));
+        builder.show();
+
     }
 }

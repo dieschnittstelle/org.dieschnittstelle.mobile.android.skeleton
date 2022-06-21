@@ -11,9 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.DatePicker;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -84,14 +82,12 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
                     }
                 }
         );
-        //this.crudOperations = SimpleTodoCRUDOperations.getInstance();
-        ///this.crudOperations = new RoomLocalTodoCRUDOperations(this.getApplicationContext()); //70:00
+
         this.crudOperations = ((TodoApplication) getApplication()).getCrudOperations();
 
         this.operationRunner = new MADAsyncOperationRunner(this, null);
 
         long todoId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
-        //this.todo = this.crudOperations.readTodo(todoId);
 
         if(todoId != -1){
             operationRunner.run(
@@ -103,7 +99,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
                         //this.binding.setTodo(this.todo);
                         this.binding.setController(this);
                     });
-            //this.todo = this.crudOperations.readTodo(todoId);
         }
 
         Log.i(LOGGER, "showing detailview for todo: " + todo );
@@ -113,7 +108,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
         }
 
         this.binding.setController(this);
-        //this.binding.setTodo(this.todo); //necessary 2505 16:30 controller viewmodel?
     }
 
     public Todo getTodo(){
@@ -152,22 +146,19 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
         if(todo.getExpiry()>LET_THERE_BE_LIGHT)
             calendar.setTimeInMillis(todo.getExpiry());
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                Calendar newDate = Calendar.getInstance();
-                newDate.set(Calendar.YEAR, year);
-                newDate.set(Calendar.MONTH, month);
-                newDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            Calendar newDate = Calendar.getInstance();
+            newDate.set(Calendar.YEAR, year);
+            newDate.set(Calendar.MONTH, month);
+            newDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                //an der Stelle verzichten wir auf L10n
-                DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
-                String r = df.format(new Date(newDate.getTimeInMillis()));
+            //an der Stelle verzichten wir auf L10n
+            DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY);
+            String r = df.format(new Date(newDate.getTimeInMillis()));
 
-                //todo.setExpiry(newDate.getTimeInMillis());
-                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
-                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiryTime)).setEnabled(true);
-            }
+            //todo.setExpiry(newDate.getTimeInMillis());
+            ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiry)).setText(r);
+            binding.getRoot().findViewById(R.id.itemExpiryTime).setEnabled(true);
         }, calendar.get(Calendar.YEAR) , calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
@@ -177,16 +168,13 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
         if(todo.getExpiry()>LET_THERE_BE_LIGHT)
             calendar.setTimeInMillis(todo.getExpiry());
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                Calendar newTime = Calendar.getInstance();
-                newTime.setTimeInMillis(todo.getExpiry());
-                newTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                newTime.set(Calendar.MINUTE, minute);
-                String r = TIME_FORMATTER.format(newTime.getTime());
-                ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiryTime)).setText(r);
-            }
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this, (view, hourOfDay, minute) -> {
+            Calendar newTime = Calendar.getInstance();
+            newTime.setTimeInMillis(todo.getExpiry());
+            newTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            newTime.set(Calendar.MINUTE, minute);
+            String r = TIME_FORMATTER.format(newTime.getTime());
+            ((TextInputEditText) binding.getRoot().findViewById(R.id.itemExpiryTime)).setText(r);
         }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
         timePickerDialog.show();
     }
@@ -258,7 +246,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
     @BindingAdapter("expiryTime")
     public static void bindExpiryTime(@NonNull TextView textView, long time){
         if(time>0){
-            DateFormat df = new SimpleDateFormat("HH:mm");
+            DateFormat df = new SimpleDateFormat("HH:mm", Locale.GERMANY);
             textView.setText(df.format(new Date(time)));
         }
 

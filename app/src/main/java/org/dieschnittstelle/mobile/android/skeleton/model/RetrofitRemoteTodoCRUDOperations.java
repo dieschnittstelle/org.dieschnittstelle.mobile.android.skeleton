@@ -31,6 +31,9 @@ public class RetrofitRemoteTodoCRUDOperations implements ITodoCRUDOperations{
 
         @DELETE("/api/todos/{todoId}")
         public Call<Boolean> deleteTodo(@Path("todoId") long id);
+
+        @DELETE("/api/todos")
+        public Call<Boolean> deleteAllTodos();
     }
 
     private TodosWebAPI webAPI;
@@ -86,5 +89,15 @@ public class RetrofitRemoteTodoCRUDOperations implements ITodoCRUDOperations{
         }catch (IOException e){
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean deleteAllTodos(boolean remote) {
+        try {
+            return webAPI.deleteAllTodos().execute().body();
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+
     }
 }

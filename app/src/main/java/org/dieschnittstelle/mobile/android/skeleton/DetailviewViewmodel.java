@@ -6,12 +6,12 @@ import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
 
 public interface DetailviewViewmodel {
 
-    public Todo getTodo();
-    public void onSaveItem();
+    Todo getTodo();
+    void onSaveItem();
 
-    public boolean checkFieldInputCompleted(View view, int actionId, boolean hasFocus, boolean isCalledFromFocusChange);
+    boolean checkFieldInputCompleted(View view, int actionId, boolean hasFocus, boolean isCalledFromFocusChange);
 
-    public String getErrorStatus();
+    String getErrorStatus();
 
-    public boolean onNameFieldInputChanged();
+    boolean onNameFieldInputChanged();
 }

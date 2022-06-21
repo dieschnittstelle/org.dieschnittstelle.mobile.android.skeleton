@@ -21,7 +21,15 @@ public class SyncedTodoCRUDOperations implements ITodoCRUDOperations{
 
     @Override
     public List<Todo> readAllTodos() {
-        return localOperations.readAllTodos();
+        List<Todo> todos = localOperations.readAllTodos();
+        if(todos.size()==0){
+            todos = remoteOperations.readAllTodos();
+            todos.forEach(todo -> localOperations.createTodo(todo));
+        }else{
+            remoteOperations.deleteAllTodos(true);
+            todos.forEach(todo -> remoteOperations.createTodo(todo));
+        }
+        return todos;
     }
 
     @Override
@@ -43,6 +51,15 @@ public class SyncedTodoCRUDOperations implements ITodoCRUDOperations{
         }
         else{
             return false;
+        }
+    }
+
+    @Override
+    public boolean deleteAllTodos(boolean remote){
+        if(!remote){
+            return localOperations.deleteAllTodos(remote);
+        }else{
+            return remoteOperations.deleteAllTodos(remote);
         }
     }
 }

@@ -1,7 +1,6 @@
 package org.dieschnittstelle.mobile.android.skeleton.model;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.util.List;
 
@@ -34,6 +33,9 @@ public class RoomLocalTodoCRUDOperations implements ITodoCRUDOperations{
 
         @Delete
         public void delete(Todo todo);
+
+        @Query("delete from todo")
+        public void deleteAll();
     }
 
     @Database(entities = {Todo.class}, version = 1)
@@ -45,8 +47,6 @@ public class RoomLocalTodoCRUDOperations implements ITodoCRUDOperations{
 
     public RoomLocalTodoCRUDOperations(Context context){
         db = Room.databaseBuilder(context, TodoDatabase.class, "todo").build();
-        Log.i("RoomLocalTodoCRUDOperations", "db: " + db + ", of class: " + db.getClass());
-        Log.i("RoomLocalTodoCRUDOperations", "dao: " + db.getDao());
     }
 
     @Override
@@ -75,6 +75,12 @@ public class RoomLocalTodoCRUDOperations implements ITodoCRUDOperations{
     @Override
     public boolean deleteTodo(long id) {
         db.getDao().delete(readTodo(id));
+        return true;
+    }
+
+    @Override
+    public boolean deleteAllTodos(boolean remote) {
+        db.getDao().deleteAll();
         return true;
     }
 }

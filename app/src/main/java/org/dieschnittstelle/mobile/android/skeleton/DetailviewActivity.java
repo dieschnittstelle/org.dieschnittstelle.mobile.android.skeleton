@@ -1,9 +1,14 @@
 package org.dieschnittstelle.mobile.android.skeleton;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -12,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -231,7 +237,86 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewV
 
     public void onContactSelected(Intent resultData){
         Log.i(LOGGER, "onContactSelected(): " + resultData);
-        //showContactDetails(resultData.getData());
+
+        showContactDetails(resultData.getData());
+
+    }
+
+    private Uri latestSelectedContactUri;
+    private static int REQUEST_PERMISSION_REQUEST_CODE = 42;
+
+
+    //damit anwendung bei fehlenden Rechten nicht unterbrochen wird
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.i(LOGGER, "onRequestPermissionResult");
+        if(requestCode == REQUEST_PERMISSION_REQUEST_CODE){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                //permission granted by user
+                if(latestSelectedContactUri != null){
+                    showContactDetails(latestSelectedContactUri);
+                }else{
+                    Toast.makeText(this, "Cannot continue granted. No contact selected", Toast.LENGTH_SHORT).show();
+                }
+            }else{
+                // permissions not granted
+                Toast.makeText(this, "Contacts cannot be accessed", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else{
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    public void showContactDetails(Uri contactUri){
+        //Permission Request
+        int hasReadContactsPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
+        if(hasReadContactsPermission != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 1);// TODO 42 hier?
+            return;
+        }
+
+        // Get Contact
+        Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
+        if(cursor.moveToFirst()){
+            Log.i(LOGGER, "moved to first element of query result");
+            int contactNamePosition = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+            String contactName = cursor.getString(contactNamePosition);
+            Log.i(LOGGER, "got contact name: " + contactName);
+            int internalIdPosition = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+            long internalId = cursor.getLong(internalIdPosition);
+            Log.i(LOGGER, "got internal id: " + internalId);
+            //ui in letzter letzt semesteraufz
+            showContactDetailsForInternalId(internalId);
+        }
+    }
+
+    public void showContactDetailsForInternalId(long internalId){
+        Log.i(LOGGER, "showContactDetailForInternalId(): " + internalId);
+        Cursor cursor = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,
+                null,
+                "_id=?",
+                new String[]{String.valueOf(internalId)}, null);
+
+        if(cursor.moveToFirst()){
+            @SuppressLint("Range") String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+            Log.i(LOGGER, "got displayName: " + displayName);
+
+            /* ab 80
+            Cursor phoneNumberCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    null,
+                    "_id=?",
+                    new String[]{String.valueOf(internalId)},
+                    null);
+            while (cursor.moveToNext()){
+                @SuppressLint("Range") String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                @SuppressLint("Range") int phoneNumberType = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+                Log.i(LOGGER, "got number " + number + " of type " + (phoneNumberType==ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE ? " mobile " : " not mobile"));
+
+            }*/
+        }else{
+            Toast.makeText(this, "No Contacts found for internal id " + internalId + " ...", Toast.LENGTH_SHORT).show();
+        }
     }
 
 

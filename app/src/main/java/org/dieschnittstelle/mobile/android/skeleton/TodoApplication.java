@@ -18,6 +18,7 @@ import java.util.concurrent.Future;
 public class TodoApplication extends Application {
 
     private ITodoCRUDOperations crudOperations;
+    private boolean isOnline = false;
 
     @Override
     public void onCreate(){
@@ -28,6 +29,7 @@ public class TodoApplication extends Application {
                         new RoomLocalTodoCRUDOperations(this),
                         new RetrofitRemoteTodoCRUDOperations());
                 this.crudOperations = new CachedTodoCRUDOperations(crudOperations);
+                isOnline = true;
                 Toast.makeText(this, "Using synced data access...", Toast.LENGTH_LONG).show();
             } else {
                 this.crudOperations = new CachedTodoCRUDOperations(new RoomLocalTodoCRUDOperations(this));
@@ -61,5 +63,9 @@ public class TodoApplication extends Application {
                 result.complete(false);
             }}).start();
         return result;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
     }
 }

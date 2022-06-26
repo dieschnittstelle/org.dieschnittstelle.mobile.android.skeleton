@@ -1,5 +1,6 @@
 package org.dieschnittstelle.mobile.android.skeleton;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.dieschnittstelle.mobile.android.skeleton.databinding.ActivityOverviewListitemViewBinding;
 import org.dieschnittstelle.mobile.android.skeleton.model.ITodoCRUDOperations;
 import org.dieschnittstelle.mobile.android.skeleton.model.Todo;
+import org.dieschnittstelle.mobile.android.skeleton.ui.login.LoginActivity;
 import org.dieschnittstelle.mobile.android.skeleton.util.MADAsyncOperationRunner;
 
 import java.text.DateFormat;
@@ -56,6 +58,7 @@ public class OverviewActivity extends AppCompatActivity {
     private ITodoCRUDOperations crudOperations;
 
     private ActivityResultLauncher<Intent> detailviewActivityLauncher;
+    private ActivityResultLauncher<Intent> loginActivityLauncher;
 
     //private final List<Todo> todoList = new ArrayList<>();
 
@@ -66,6 +69,21 @@ public class OverviewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(((TodoApplication) getApplication()).isOnline()){
+            this.loginActivityLauncher = registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if(result.getResultCode() == Activity.RESULT_OK){
+                            Log.i(LOGGER, "auth loa");
+                        }
+                    }
+            );
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+
+            loginActivityLauncher.launch(loginIntent);
+
+        }
 
         setContentView(R.layout.activity_overview);
 

@@ -3,23 +3,19 @@
 buildscript {
     repositories {
         google()
-        jcenter()
-
+        mavenCentral()
     }
     dependencies {
-        def nav_version = "2.4.1"
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
+        classpath 'com.android.tools.build:gradle:8.1.1'
         // this is used for firebase
-        classpath "com.google.gms:google-services:4.3.10"
+        classpath "com.google.gms:google-services:4.3.15"
     }
 }
 
 allprojects {
     repositories {
         google()
-        jcenter()
-
+        mavenCentral()
     }
 }
 

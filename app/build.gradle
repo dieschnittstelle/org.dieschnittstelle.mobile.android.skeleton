@@ -2,7 +2,7 @@ apply plugin: "com.android.application"
 apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 34
+    compileSdk 34
     defaultConfig {
         applicationId "org.dieschnittstelle.mobile.android.skeleton"
         minSdkVersion 24
